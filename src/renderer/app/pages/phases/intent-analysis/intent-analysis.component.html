@@ -1,0 +1,103 @@
+<div class="phase-screen">
+  <!-- ── Phase header ────────────────────────────────────────────────────── -->
+  @if (descriptor()) {
+    <app-phase-header
+      [descriptor]="descriptor()!"
+      [percentComplete]="percentComplete()"
+      [isExecuting]="isExecuting()"
+    />
+  }
+
+  <!-- ── Main body ──────────────────────────────────────────────────────── -->
+  <div class="phase-screen__body">
+    <!-- ── Input section ────────────────────────────────────────────────── -->
+    @if (!isCompleted() || !intentModel()) {
+      <section class="phase-section" aria-label="Documentation input">
+        <h2 class="phase-section__title">Documentation Files</h2>
+        <p class="phase-section__desc">
+          Select your product documentation files. Supported formats:
+          Markdown (.md), plain text (.txt), and PDF (.pdf).
+        </p>
+
+        <app-file-input
+          [files]="selectedFiles()"
+          [disabled]="isExecuting()"
+          (filesChanged)="onFilesChanged($event)"
+        />
+
+        <!-- ── Execute / status actions ──────────────────────────────── -->
+        <div class="phase-section__actions">
+          @if (executionState() === 'idle' || executionState() === 'cancelled') {
+            <button
+              type="button"
+              class="btn btn--primary"
+              [disabled]="!canExecute()"
+              (click)="execute()"
+              aria-label="Run Intent Analysis"
+            >
+              @if (selectedFiles().length === 0) {
+                Select files to begin
+              } @else {
+                ▶ Run Intent Analysis
+              }
+            </button>
+          }
+
+          @if (hasFailed()) {
+            <div class="error-banner" role="alert">
+              <span>Analysis failed. Check the log below for details.</span>
+              <button
+                type="button"
+                class="btn btn--ghost btn--sm"
+                (click)="resetAndRetry()"
+              >
+                Try Again
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ── Execution log ──────────────────────────────────────────────── -->
+    @if (progressEvents().length > 0 || isExecuting()) {
+      <section class="phase-section" aria-label="Execution progress">
+        <app-execution-panel
+          [events]="progressEvents()"
+          [executionState]="executionState()"
+          (cancel)="cancel()"
+        />
+      </section>
+    }
+
+    <!-- ── Output preview ─────────────────────────────────────────────── -->
+    @if (isCompleted() && intentModel()) {
+      <section class="phase-section" aria-label="Intent Model output">
+        <app-output-preview [intentModel]="intentModel()!" />
+      </section>
+    }
+  </div>
+
+  <!-- ── Footer navigation ──────────────────────────────────────────────── -->
+  <footer class="phase-screen__footer">
+    <button
+      type="button"
+      class="btn btn--ghost"
+      (click)="navigateToDashboard()"
+      aria-label="Back to project dashboard"
+    >
+      ← Dashboard
+    </button>
+
+    @if (canProceed()) {
+      <button
+        type="button"
+        class="btn btn--primary"
+        (click)="proceedToNextPhase()"
+        aria-label="Proceed to Phase 2: Repository Analysis"
+      >
+        Proceed to Phase 2 →
+      </button>
+    }
+  </footer>
+</div>

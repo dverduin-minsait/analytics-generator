@@ -1,0 +1,40 @@
+/* ─── Theme: Dark ─────────────────────────────────────────────────────────── */
+:root[data-theme='dark'] {
+  --color-bg: #0f172a;
+  --color-surface: #1e293b;
+  --color-surface-raised: #334155;
+  --color-border: #334155;
+
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #475569;
+
+  --color-primary: #818cf8;
+  --color-primary-hover: #a5b4fc;
+  --color-primary-subtle: rgba(99, 102, 241, 0.15);
+
+  --color-success: #34d399;
+  --color-success-subtle: rgba(16, 185, 129, 0.15);
+  --color-warning: #fbbf24;
+  --color-warning-subtle: rgba(245, 158, 11, 0.15);
+  --color-error: #f87171;
+  --color-error-subtle: rgba(239, 68, 68, 0.15);
+
+  --color-deterministic: #60a5fa;
+  --color-deterministic-subtle: rgba(59, 130, 246, 0.15);
+  --color-llm-required: #a78bfa;
+  --color-llm-required-subtle: rgba(139, 92, 246, 0.15);
+  --color-llm-optional: #fbbf24;
+  --color-llm-optional-subtle: rgba(245, 158, 11, 0.15);
+  --color-llm-partial: #818cf8;
+  --color-llm-partial-subtle: rgba(99, 102, 241, 0.15);
+  --color-premium: #f472b6;
+  --color-premium-subtle: rgba(236, 72, 153, 0.15);
+
+  --color-focus-ring: #818cf8;
+  --color-interactive-hover: rgba(129, 140, 248, 0.1);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}

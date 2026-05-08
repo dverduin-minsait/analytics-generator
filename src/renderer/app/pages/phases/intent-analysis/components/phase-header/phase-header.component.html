@@ -1,0 +1,40 @@
+<header class="phase-header" role="banner">
+  <div class="phase-header__top">
+    <div class="phase-header__identity">
+      <span class="phase-header__number" aria-hidden="true">
+        Phase {{ descriptor().id }}
+      </span>
+      <h1 class="phase-header__name">{{ descriptor().name }}</h1>
+    </div>
+    <div class="phase-header__badges" aria-label="Phase characteristics">
+      <span
+        class="badge phase-badge"
+        [class]="llmBadgeClass"
+        [attr.aria-label]="'AI usage: ' + llmBadgeLabel"
+      >
+        {{ llmBadgeLabel }}
+      </span>
+      @if (descriptor().isPremium) {
+        <span class="badge badge--premium">PREMIUM</span>
+      }
+    </div>
+  </div>
+
+  <p class="phase-header__goal">{{ descriptor().goalStatement }}</p>
+
+  @if (isExecuting() || (percentComplete() !== null && percentComplete()! > 0)) {
+    <div
+      class="phase-header__progress"
+      role="progressbar"
+      [attr.aria-valuenow]="percentComplete() ?? 0"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      [attr.aria-label]="'Phase progress: ' + (percentComplete() ?? 0) + '%'"
+    >
+      <div
+        class="phase-header__progress-bar"
+        [style.width.%]="percentComplete() ?? 0"
+      ></div>
+    </div>
+  }
+</header>

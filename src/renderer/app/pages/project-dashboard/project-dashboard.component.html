@@ -1,0 +1,61 @@
+<div class="dashboard">
+  <header class="dashboard__header">
+    <div>
+      <h1 class="dashboard__title">{{ project()?.metadata?.name }}</h1>
+      @if (project()?.metadata?.description) {
+        <p class="dashboard__desc">{{ project()?.metadata?.description }}</p>
+      }
+    </div>
+  </header>
+
+  <section class="dashboard__phases" aria-label="Project phases">
+    <h2 class="dashboard__section-title">Phases</h2>
+
+    <ol class="phase-grid" role="list">
+      @for (item of phaseSummaries(); track item.descriptor.id) {
+        <li class="phase-card-wrapper">
+          <button
+            class="phase-card"
+            [class.phase-card--completed]="item.state.status === 'completed'"
+            [class.phase-card--in-progress]="item.state.status === 'in-progress'"
+            [class.phase-card--failed]="item.state.status === 'failed'"
+            [class.phase-card--premium]="item.descriptor.isPremium"
+            (click)="navigateToPhase(item.descriptor.id)"
+            [attr.aria-label]="
+              'Phase ' + item.descriptor.id + ': ' + item.descriptor.name +
+              '. Status: ' + item.state.status
+            "
+          >
+            <div class="phase-card__number" aria-hidden="true">
+              {{ item.descriptor.id }}
+            </div>
+            <div class="phase-card__body">
+              <div class="phase-card__header-row">
+                <span class="phase-card__name">{{ item.descriptor.name }}</span>
+                @if (item.descriptor.isPremium) {
+                  <span class="badge badge--premium" title="Premium feature">PREMIUM</span>
+                }
+              </div>
+              <p class="phase-card__goal">{{ item.descriptor.goalStatement }}</p>
+              <div class="phase-card__footer">
+                <span
+                  class="badge"
+                  [class.llm-badge--none]="item.descriptor.llmUsage === 'none'"
+                  [class.llm-badge--required]="item.descriptor.llmUsage === 'required'"
+                  [class.llm-badge--optional]="item.descriptor.llmUsage === 'optional'"
+                  [class.llm-badge--partial]="item.descriptor.llmUsage === 'partial'"
+                >
+                  {{ getLLMLabel(item.descriptor) }}
+                </span>
+                <span class="phase-card__status" [attr.data-status]="item.state.status">
+                  <span aria-hidden="true">{{ getStatusIcon(item.state.status) }}</span>
+                  {{ item.state.status | titlecase }}
+                </span>
+              </div>
+            </div>
+          </button>
+        </li>
+      }
+    </ol>
+  </section>
+</div>

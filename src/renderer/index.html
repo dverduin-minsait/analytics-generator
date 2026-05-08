@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      CSP is applied by the Electron session in production (main.ts).
+      The meta tag below is a defence-in-depth fallback for development.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:;"
+    />
+    <title>Analytics Generator</title>
+    <base href="/" />
+    <link rel="icon" type="image/svg+xml" href="assets/icon.svg" />
+  </head>
+  <body>
+    <app-root></app-root>
+  </body>
+</html>

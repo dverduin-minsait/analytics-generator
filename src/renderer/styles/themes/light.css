@@ -1,0 +1,73 @@
+/* ─── Theme: Light (default) ──────────────────────────────────────────────── */
+:root,
+:root[data-theme='light'] {
+  /* Surfaces */
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f1f5f9;
+  --color-border: #e2e8f0;
+
+  /* Text */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94a3b8;
+
+  /* Brand */
+  --color-primary: #6366f1;
+  --color-primary-hover: #4f46e5;
+  --color-primary-subtle: #eef2ff;
+
+  /* Status */
+  --color-success: #10b981;
+  --color-success-subtle: #d1fae5;
+  --color-warning: #f59e0b;
+  --color-warning-subtle: #fef3c7;
+  --color-error: #ef4444;
+  --color-error-subtle: #fee2e2;
+
+  /* Phase-type visual distinction */
+  --color-deterministic: #3b82f6;        /* blue — deterministic phase */
+  --color-deterministic-subtle: #eff6ff;
+  --color-llm-required: #8b5cf6;         /* purple — LLM required */
+  --color-llm-required-subtle: #f5f3ff;
+  --color-llm-optional: #f59e0b;         /* amber — LLM optional / POWER UP */
+  --color-llm-optional-subtle: #fffbeb;
+  --color-llm-partial: #6366f1;          /* indigo — LLM partial */
+  --color-llm-partial-subtle: #eef2ff;
+  --color-premium: #ec4899;              /* pink — premium feature */
+  --color-premium-subtle: #fdf2f8;
+
+  /* Interactive */
+  --color-focus-ring: #6366f1;
+  --color-interactive-hover: rgba(99, 102, 241, 0.08);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Typography */
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* Spacing scale (used as CSS custom properties for consistency) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Transitions */
+  --transition-fast: 120ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 350ms ease;
+}

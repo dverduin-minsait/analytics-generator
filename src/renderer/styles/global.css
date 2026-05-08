@@ -1,0 +1,184 @@
+/* ─── Theme imports ───────────────────────────────────────────────────────── */
+@import './themes/light.css';
+@import './themes/dark.css';
+@import './themes/high-contrast.css';
+
+/* ─── OS preference auto-detection ──────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    /* Mirror dark theme variables when no explicit theme is set */
+    --color-bg: #0f172a;
+    --color-surface: #1e293b;
+    --color-surface-raised: #334155;
+    --color-border: #334155;
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #94a3b8;
+    --color-text-muted: #475569;
+    --color-primary: #818cf8;
+    --color-primary-hover: #a5b4fc;
+    --color-primary-subtle: rgba(99, 102, 241, 0.15);
+    --color-success: #34d399;
+    --color-success-subtle: rgba(16, 185, 129, 0.15);
+    --color-warning: #fbbf24;
+    --color-warning-subtle: rgba(245, 158, 11, 0.15);
+    --color-error: #f87171;
+    --color-error-subtle: rgba(239, 68, 68, 0.15);
+    --color-deterministic: #60a5fa;
+    --color-deterministic-subtle: rgba(59, 130, 246, 0.15);
+    --color-llm-required: #a78bfa;
+    --color-llm-required-subtle: rgba(139, 92, 246, 0.15);
+    --color-llm-optional: #fbbf24;
+    --color-llm-optional-subtle: rgba(245, 158, 11, 0.15);
+    --color-llm-partial: #818cf8;
+    --color-llm-partial-subtle: rgba(99, 102, 241, 0.15);
+    --color-premium: #f472b6;
+    --color-premium-subtle: rgba(236, 72, 153, 0.15);
+    --color-focus-ring: #818cf8;
+    --color-interactive-hover: rgba(129, 140, 248, 0.1);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* ─── Global resets ──────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden; /* Electron: prevent OS scrollbars on the window chrome */
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Electron: prevent text selection on non-input elements */
+  user-select: none;
+}
+
+/* Allow selection in editable areas */
+input,
+textarea,
+[contenteditable] {
+  user-select: text;
+}
+
+/* ─── Skip-to-content link (accessibility) ───────────────────────────────── */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: var(--space-4);
+  z-index: 9999;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: top var(--transition-fast);
+}
+
+.skip-to-content:focus {
+  top: var(--space-4);
+}
+
+/* ─── Focus ring (consistent across themes) ──────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Typography utilities ───────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+
+code, pre, kbd {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+/* ─── Scrollbar styling ──────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ─── Button base ────────────────────────────────────────────────────────── */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ─── LLM badge color utilities (used across phase screens) ──────────────── */
+.llm-badge--required {
+  background: var(--color-llm-required-subtle);
+  color: var(--color-llm-required);
+  border: 1px solid var(--color-llm-required);
+}
+
+.llm-badge--optional {
+  background: var(--color-llm-optional-subtle);
+  color: var(--color-llm-optional);
+  border: 1px solid var(--color-llm-optional);
+}
+
+.llm-badge--partial {
+  background: var(--color-llm-partial-subtle);
+  color: var(--color-llm-partial);
+  border: 1px solid var(--color-llm-partial);
+}
+
+.llm-badge--none {
+  background: var(--color-deterministic-subtle);
+  color: var(--color-deterministic);
+  border: 1px solid var(--color-deterministic);
+}
+
+/* ─── Phase assisted output indicator ────────────────────────────────────── */
+.assisted-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-llm-optional);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--color-llm-optional-subtle);
+}

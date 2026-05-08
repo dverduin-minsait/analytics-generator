@@ -1,0 +1,61 @@
+@if (isVisible()) {
+  <div class="execution-panel" role="region" aria-label="Phase execution log">
+    <!-- Status bar -->
+    <div class="execution-panel__status-bar">
+      <div class="execution-panel__status-indicator">
+        @if (isExecuting()) {
+          <span class="spinner" aria-hidden="true"></span>
+        } @else if (isCompleted()) {
+          <span class="status-icon status-icon--ok" aria-hidden="true">✓</span>
+        } @else if (hasFailed()) {
+          <span class="status-icon status-icon--error" aria-hidden="true">✕</span>
+        }
+        <span
+          class="execution-panel__status-text"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {{ statusMessage() }}
+        </span>
+      </div>
+      @if (isExecuting()) {
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="onCancelClick()"
+          aria-label="Cancel phase execution"
+        >
+          Cancel
+        </button>
+      }
+    </div>
+
+    <!-- Log -->
+    <div
+      #logContainer
+      class="execution-panel__log"
+      role="log"
+      aria-label="Execution log"
+      aria-live="polite"
+      aria-relevant="additions"
+    >
+      @for (event of events(); track event.timestamp; let last = $last) {
+        <div
+          class="log-event"
+          [class]="getEventClass(event)"
+          [class.log-event--last]="last && isExecuting()"
+        >
+          <span class="log-event__icon" aria-hidden="true">
+            {{ getEventIcon(event) }}
+          </span>
+          <span class="log-event__message">{{ event.message }}</span>
+          @if (event.llmAssisted) {
+            <span class="assisted-marker" title="This step was LLM-assisted">AI</span>
+          }
+          <span class="log-event__time">{{ formatTime(event.timestamp) }}</span>
+        </div>
+
+      }
+    </div>
+  </div>
+}

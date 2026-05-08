@@ -1,0 +1,133 @@
+<section class="output-preview" aria-label="Intent Model output">
+  <!-- ── Summary card ──────────────────────────────────────────────────── -->
+  <div class="summary-card">
+    <div class="summary-card__header">
+      <h2 class="summary-card__title">Intent Model</h2>
+      @if (intentModel().llmAssisted) {
+        <span class="assisted-marker" title="Generated with LLM assistance">
+          ✦ AI Assisted
+        </span>
+      }
+    </div>
+    <div class="summary-card__stats">
+      <div class="stat">
+        <span class="stat__value">{{ intentModel().flows.length }}</span>
+        <span class="stat__label">Flows</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value">{{ totalEvents() }}</span>
+        <span class="stat__label">Events</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value">{{ intentModel().globalEvents.length }}</span>
+        <span class="stat__label">Global Events</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value">{{ intentModel().sourceDocuments.length }}</span>
+        <span class="stat__label">Source Docs</span>
+      </div>
+    </div>
+    <div class="summary-card__actions">
+      <button class="btn btn--ghost btn--sm" (click)="expandAll()">
+        Expand All
+      </button>
+      <button class="btn btn--ghost btn--sm" (click)="collapseAll()">
+        Collapse All
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Flows ─────────────────────────────────────────────────────────── -->
+  @if (intentModel().flows.length > 0) {
+    <div class="flows-list" role="list" aria-label="Detected user flows">
+      @for (flow of intentModel().flows; track flow.id) {
+        <div class="flow-card" role="listitem">
+          <button
+            class="flow-card__header"
+            (click)="toggleFlow(flow.id)"
+            [attr.aria-expanded]="isFlowExpanded(flow.id)"
+            [attr.aria-controls]="'flow-body-' + flow.id"
+          >
+            <span class="flow-card__toggle" aria-hidden="true">
+              {{ isFlowExpanded(flow.id) ? '▼' : '▶' }}
+            </span>
+            <span class="flow-card__name">{{ flow.name }}</span>
+            <span class="flow-card__event-count">
+              {{ flow.events.length }} event{{ flow.events.length !== 1 ? 's' : '' }}
+            </span>
+            <span
+              class="confidence-badge"
+              [class]="getConfidenceClass(flow.confidence)"
+              [title]="'Confidence: ' + (flow.confidence * 100 | number: '1.0-0') + '%'"
+              aria-label="Confidence {{ flow.confidence * 100 | number: '1.0-0' }}%"
+            >
+              {{ (flow.confidence * 100 | number: '1.0-0') + '%' }}
+            </span>
+          </button>
+
+          @if (isFlowExpanded(flow.id)) {
+            <div
+              [id]="'flow-body-' + flow.id"
+              class="flow-card__body"
+            >
+              @if (flow.description) {
+                <p class="flow-card__desc">{{ flow.description }}</p>
+              }
+
+              @if (flow.events.length > 0) {
+                <div class="flow-card__events">
+                  <h4 class="flow-card__events-title">Analytics Events</h4>
+                  <ul class="event-list" role="list">
+                    @for (event of flow.events; track event.id) {
+                      <li class="event-item">
+                        <div class="event-item__header">
+                          <code class="event-item__name">{{ event.name }}</code>
+                          <span
+                            class="event-item__source"
+                            [class.event-item__source--inferred]="event.source === 'inferred'"
+                          >
+                            {{ event.source }}
+                          </span>
+                        </div>
+                        @if (event.description) {
+                          <p class="event-item__desc">{{ event.description }}</p>
+                        }
+                        @if (event.expectedProperties.length > 0) {
+                          <div class="event-item__props">
+                            @for (prop of event.expectedProperties; track prop) {
+                              <code class="prop-chip">{{ prop }}</code>
+                            }
+                          </div>
+                        }
+                      </li>
+                    }
+                  </ul>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── Global events ──────────────────────────────────────────────────── -->
+  @if (intentModel().globalEvents.length > 0) {
+    <div class="global-events">
+      <h3 class="global-events__title">Global Events</h3>
+      <ul class="event-list" role="list">
+        @for (event of intentModel().globalEvents; track event.id) {
+          <li class="event-item">
+            <div class="event-item__header">
+              <code class="event-item__name">{{ event.name }}</code>
+              <span class="event-item__source">{{ event.source }}</span>
+            </div>
+            @if (event.description) {
+              <p class="event-item__desc">{{ event.description }}</p>
+            }
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</section>

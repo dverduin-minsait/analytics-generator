@@ -1,0 +1,58 @@
+<a class="skip-to-content" href="#main-content">Skip to main content</a>
+
+<div class="app-layout">
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header class="app-header" role="banner">
+    <div class="app-header__brand">
+      <a routerLink="/welcome" class="app-header__logo" aria-label="Go to home">
+        <span class="app-header__logo-mark" aria-hidden="true">◆</span>
+        <span class="app-header__logo-name">Analytics Generator</span>
+      </a>
+    </div>
+
+    @if (inProject()) {
+      <nav class="app-header__phase-nav" aria-label="Project phases">
+        <button
+          class="app-header__project-name"
+          (click)="navigateToDashboard()"
+          [title]="currentProject()?.metadata?.name"
+        >
+          {{ currentProject()?.metadata?.name }}
+        </button>
+        <span class="app-header__nav-sep" aria-hidden="true">/</span>
+        <!-- Phase breadcrumb dots -->
+        <ol class="phase-dots" role="list" aria-label="Phase progress">
+          @for (descriptor of phaseService.descriptors(); track descriptor.id) {
+            <li class="phase-dots__item">
+              <button
+                class="phase-dot"
+                [class.phase-dot--premium]="descriptor.isPremium"
+                [attr.aria-label]="'Phase ' + descriptor.id + ': ' + descriptor.name"
+                [title]="'Phase ' + descriptor.id + ' — ' + descriptor.name"
+                (click)="navigateToPhase(descriptor.id)"
+              >
+                <span class="phase-dot__number" aria-hidden="true">{{ descriptor.id }}</span>
+              </button>
+            </li>
+          }
+        </ol>
+      </nav>
+    }
+
+    <div class="app-header__actions">
+      <button
+        class="btn-icon"
+        (click)="cycleTheme()"
+        [title]="themeLabel()"
+        [attr.aria-label]="'Switch theme. Current: ' + themeService.currentTheme()"
+      >
+        {{ themeLabel() }}
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Main content ───────────────────────────────────────────────────── -->
+  <main id="main-content" class="app-main" role="main">
+    <router-outlet />
+  </main>
+</div>

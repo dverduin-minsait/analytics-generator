@@ -1,0 +1,118 @@
+<div class="welcome" role="main">
+  <!-- ── Hero ──────────────────────────────────────────────────────────── -->
+  <header class="welcome__hero">
+    <div class="welcome__logo-mark" aria-hidden="true">◆</div>
+    <h1 class="welcome__title">Analytics Generator</h1>
+    <p class="welcome__tagline">
+      <code>intent → spec → contract → code</code>
+    </p>
+    <p class="welcome__subtitle">
+      A governed, deterministic platform for generating product analytics
+      from your documentation and codebase.
+    </p>
+  </header>
+
+  <!-- ── Create new project form ───────────────────────────────────────── -->
+  @if (showCreateForm()) {
+    <section class="welcome__card" aria-label="Create new project">
+      <h2 class="welcome__card-title">New Project</h2>
+      <form
+        [formGroup]="createForm"
+        (ngSubmit)="submitCreate()"
+        class="create-form"
+        novalidate
+      >
+        <div class="form-field">
+          <label class="form-label" for="project-name">Project Name *</label>
+          <input
+            id="project-name"
+            type="text"
+            class="form-input"
+            formControlName="name"
+            placeholder="e.g. My Product Analytics"
+            autocomplete="off"
+            [attr.aria-invalid]="
+              createForm.get('name')?.invalid && createForm.get('name')?.touched
+            "
+          />
+          @if (createForm.get('name')?.invalid && createForm.get('name')?.touched) {
+            <p class="form-error" role="alert">Project name is required.</p>
+          }
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="project-desc">Description</label>
+          <input
+            id="project-desc"
+            type="text"
+            class="form-input"
+            formControlName="description"
+            placeholder="Optional short description"
+            autocomplete="off"
+          />
+        </div>
+        @if (error()) {
+          <p class="form-error" role="alert">{{ error() }}</p>
+        }
+        <div class="create-form__actions">
+          <button
+            type="button"
+            class="btn btn--ghost"
+            (click)="closeCreateForm()"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="btn btn--primary"
+            [disabled]="createForm.invalid || isLoading()"
+          >
+            @if (isLoading()) {
+              Creating…
+            } @else {
+              Create Project
+            }
+          </button>
+        </div>
+      </form>
+    </section>
+  } @else {
+    <!-- ── Primary actions ──────────────────────────────────────────────── -->
+    <div class="welcome__actions">
+      <button class="btn btn--primary btn--lg" (click)="openCreateForm()">
+        + New Project
+      </button>
+    </div>
+  }
+
+  <!-- ── Recent projects ───────────────────────────────────────────────── -->
+  @if (recentProjects().length > 0) {
+    <section class="welcome__recent" aria-label="Recent projects">
+      <h2 class="welcome__section-title">Recent Projects</h2>
+      <ul class="project-list" role="list">
+        @for (project of recentProjects(); track project.id) {
+          <li class="project-list__item">
+            <button
+              class="project-card"
+              (click)="openProject(project.id)"
+              [attr.aria-label]="'Open project: ' + project.name"
+            >
+              <div class="project-card__icon" aria-hidden="true">◆</div>
+              <div class="project-card__body">
+                <span class="project-card__name">{{ project.name }}</span>
+                @if (project.description) {
+                  <span class="project-card__desc">{{ project.description }}</span>
+                }
+                <span class="project-card__meta">
+                  Last updated {{ project.updatedAt | date: 'mediumDate' }}
+                </span>
+              </div>
+              <span class="project-card__arrow" aria-hidden="true">→</span>
+            </button>
+          </li>
+        }
+      </ul>
+    </section>
+  } @else if (!isLoading() && !showCreateForm()) {
+    <p class="welcome__empty">No projects yet. Create one to get started.</p>
+  }
+</div>

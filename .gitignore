@@ -1,0 +1,22 @@
+node_modules/
+dist/
+out-tsc/
+.angular/
+coverage/
+test/e2e-report/
+
+# Electron
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/settings.json
+.idea/
