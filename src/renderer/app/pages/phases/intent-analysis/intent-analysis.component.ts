@@ -30,6 +30,9 @@ import { PhaseHeaderComponent } from './components/phase-header/phase-header.com
 import { FileInputComponent, type SelectedFile } from './components/file-input/file-input.component';
 import { ExecutionPanelComponent } from './components/execution-panel/execution-panel.component';
 import { OutputPreviewComponent } from './components/output-preview/output-preview.component';
+import { ManualLlmInputComponent } from './components/manual-llm-input/manual-llm-input.component';
+
+type AnalysisMode = 'auto' | 'manual';
 
 @Component({
   selector: 'app-intent-analysis',
@@ -39,6 +42,7 @@ import { OutputPreviewComponent } from './components/output-preview/output-previ
     FileInputComponent,
     ExecutionPanelComponent,
     OutputPreviewComponent,
+    ManualLlmInputComponent,
   ],
   templateUrl: './intent-analysis.component.html',
   styleUrl: './intent-analysis.component.css',
@@ -56,6 +60,7 @@ export class IntentAnalysisComponent implements OnInit, OnDestroy {
   // ── Component state ──────────────────────────────────────────────────────
   protected readonly selectedFiles = signal<SelectedFile[]>([]);
   protected readonly intentModel = signal<IntentModel | null>(null);
+  protected readonly mode = signal<AnalysisMode>('auto');
 
   // ── Derived from PhaseService ─────────────────────────────────────────────
   protected readonly descriptor = computed(() =>
@@ -116,6 +121,10 @@ export class IntentAnalysisComponent implements OnInit, OnDestroy {
     this.selectedFiles.set(files);
   }
 
+  protected setMode(m: AnalysisMode): void {
+    this.mode.set(m);
+  }
+
   protected async execute(): Promise<void> {
     if (!this.canExecute()) return;
 
@@ -128,7 +137,21 @@ export class IntentAnalysisComponent implements OnInit, OnDestroy {
       { useLLM: true, dryRun: false },
     );
 
-    // When execution completes, retrieve the artifact from the last progress event
+    this.watchForCompletion();
+  }
+
+  protected async executeManual(rawJson: string): Promise<void> {
+    if (this.executionState() !== 'idle') return;
+
+    this.intentModel.set(null);
+
+    await this.phaseService.execute(
+      this.projectId,
+      PhaseId.IntentAnalysis,
+      { filePaths: this.selectedFiles().map((f) => f.path) },
+      { useLLM: false, dryRun: false, manualLLMResponse: rawJson },
+    );
+
     this.watchForCompletion();
   }
 

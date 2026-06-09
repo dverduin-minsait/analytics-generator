@@ -133,26 +133,32 @@ export class IntentAnalysisEngine
     const prompt = this.buildPrompt(documents);
 
     // ── Step 3: Call LLM ──────────────────────────────────────────────────────
-    yield this.event(
-      phaseId,
-      'progress',
-      options.useLLM
-        ? 'Sending to LLM for semantic analysis… (this may take a moment)'
-        : 'LLM disabled — producing stub output',
-      40,
-      true,
-    );
-
     let rawLLMResponse: string;
-    if (options.useLLM) {
-      const gateway = LLMGateway.getInstance();
-      const response = await gateway.complete(
-        { systemPrompt: prompt.system, userPrompt: prompt.user },
-        options.llmProvider as Parameters<typeof gateway.complete>[1],
-      );
-      rawLLMResponse = response.content;
+
+    if (options.manualLLMResponse !== undefined) {
+      yield this.event(phaseId, 'progress', 'Using manually provided LLM response…', 40, true);
+      rawLLMResponse = options.manualLLMResponse;
     } else {
-      rawLLMResponse = this.stubLLMResponse(documents);
+      yield this.event(
+        phaseId,
+        'progress',
+        options.useLLM
+          ? 'Sending to LLM for semantic analysis… (this may take a moment)'
+          : 'LLM disabled — producing stub output',
+        40,
+        true,
+      );
+
+      if (options.useLLM) {
+        const gateway = LLMGateway.getInstance();
+        const response = await gateway.complete(
+          { systemPrompt: prompt.system, userPrompt: prompt.user },
+          options.llmProvider as Parameters<typeof gateway.complete>[1],
+        );
+        rawLLMResponse = response.content;
+      } else {
+        rawLLMResponse = this.stubLLMResponse(documents);
+      }
     }
 
     if (this.cancelRequested) {
@@ -165,8 +171,8 @@ export class IntentAnalysisEngine
     const intentModel = this.parseLLMResponse(
       rawLLMResponse,
       input.filePaths,
-      options.useLLM,
-      options.llmProvider,
+      options.useLLM || options.manualLLMResponse !== undefined,
+      options.llmProvider ?? (options.manualLLMResponse !== undefined ? 'manual' : undefined),
     );
 
     // ── Step 5: Done ─────────────────────────────────────────────────────────
@@ -186,6 +192,91 @@ export class IntentAnalysisEngine
 
   // ── Private helpers ───────────────────────────────────────────────────────
 
+  /**
+   * Generates a self-contained, clipboard-ready prompt by reading all input
+   * files and embedding their content. The user can paste this verbatim into
+   * any chatbot (ChatGPT, Claude, Gemini, etc.) and paste the JSON response
+   * back into the app for manual submission.
+   */
+  async generateClipboardPrompt(filePaths: string[]): Promise<string> {
+    const documents: { name: string; content: string }[] = [];
+    for (const filePath of filePaths) {
+      const content = await this.readDocument(filePath);
+      documents.push({ name: path.basename(filePath), content });
+    }
+    const { system, user } = this.buildPrompt(documents);
+
+    return [
+      '# Analytics Compiler — Intent Analysis Prompt',
+      '',
+      '> Paste this entire prompt into ChatGPT, Claude, Gemini, or any chatbot.',
+      '> Copy the JSON response and paste it back into the app.',
+      '',
+      '---',
+      '',
+      '## System Instructions',
+      '',
+      system,
+      '',
+      '---',
+      '',
+      '## Documentation to Analyze',
+      '',
+      user,
+      '',
+      '---',
+      '',
+      '## Concrete Example of a Valid Response',
+      '',
+      'The response you return must look exactly like this (with your own content):',
+      '',
+      '```json',
+      '{',
+      '  "flows": [',
+      '    {',
+      '      "id": "user-registration",',
+      '      "name": "User Registration",',
+      '      "description": "The end-to-end journey a new visitor takes to create an account.",',
+      '      "userStories": [',
+      '        "As a visitor, I want to sign up so I can access the product."',
+      '      ],',
+      '      "features": ["Sign-up form", "Email verification"],',
+      '      "confidence": 0.95,',
+      '      "events": [',
+      '        {',
+      '          "id": "sign-up-started",',
+      '          "name": "SIGN_UP_STARTED",',
+      '          "description": "Fired when the user opens the registration form.",',
+      '          "trigger": "User clicks the Sign Up button on the landing page.",',
+      '          "expectedProperties": ["referral_source", "plan_type"],',
+      '          "source": "explicit"',
+      '        },',
+      '        {',
+      '          "id": "sign-up-completed",',
+      '          "name": "SIGN_UP_COMPLETED",',
+      '          "description": "Fired when account creation succeeds.",',
+      '          "trigger": "Server returns 200 after form submission.",',
+      '          "expectedProperties": ["user_id", "plan_type", "email_verified"],',
+      '          "source": "explicit"',
+      '        }',
+      '      ]',
+      '    }',
+      '  ],',
+      '  "globalEvents": [',
+      '    {',
+      '      "id": "app-launched",',
+      '      "name": "APP_LAUNCHED",',
+      '      "description": "Fired every time the application starts.",',
+      '      "trigger": "Application initializes on any page load.",',
+      '      "expectedProperties": ["app_version", "platform"],',
+      '      "source": "inferred"',
+      '    }',
+      '  ]',
+      '}',
+      '```',
+    ].join('\n');
+  }
+
   private async readDocument(filePath: string): Promise<string> {
     const ext = path.extname(filePath).toLowerCase();
     if (ext === '.pdf') {
@@ -200,21 +291,60 @@ export class IntentAnalysisEngine
     system: string;
     user: string;
   } {
-    const system = `You are an analytics architect assistant. Your task is to analyze product documentation and extract a structured Intent Model in JSON format.
+    const system = `You are an analytics architect. Your only job is to read product documentation and produce a structured JSON object called an Intent Model.
 
-The Intent Model must contain:
-- flows: array of user flows, each with id, name, description, userStories, features, events, confidence, llmAssisted
-- globalEvents: array of events that span multiple flows
+## What you must return
 
-Each event must have: id, name, description, trigger, expectedProperties, source ("explicit" | "inferred")
+Return ONLY a JSON object with exactly two top-level keys: "flows" and "globalEvents".
+Do NOT include markdown code fences, explanations, comments, or any text outside the JSON object.
 
-Respond ONLY with valid JSON. Do not include markdown code fences or any text outside the JSON object.`;
+## Schema
+
+### Event object (used inside flows and in globalEvents)
+{
+  "id":                 string,   // short kebab-case identifier, e.g. "user-signed-up"
+  "name":               string,   // SCREAMING_SNAKE_CASE tracking name, e.g. "USER_SIGNED_UP"
+  "description":        string,   // one sentence: what this event represents
+  "trigger":            string,   // the exact user action or system condition that fires it
+  "expectedProperties": string[], // list of property keys sent with this event, e.g. ["plan_type", "user_id"]
+  "source":             "explicit" | "inferred"
+                        // "explicit" = the doc names this event or property verbatim
+                        // "inferred" = you deduced it from context; flag these for human review
+}
+
+### Flow object
+{
+  "id":          string,    // short kebab-case identifier, e.g. "onboarding-flow"
+  "name":        string,    // human-readable title, e.g. "User Onboarding"
+  "description": string,    // one paragraph: what the user is trying to accomplish
+  "userStories": string[],  // "As a <role>, I want to <goal>" sentences extracted from the docs
+  "features":    string[],  // named product features mentioned in this flow
+  "events":      Event[],   // ordered list of analytics events that occur during this flow
+  "confidence":  number     // 0.0–1.0 — your confidence that this flow is correctly identified;
+                            // use < 0.7 for flows you largely inferred
+}
+
+### Root object
+{
+  "flows":        Flow[], // every distinct user journey found in the documentation
+  "globalEvents": Event[] // events that are not tied to a single flow (e.g. app launch, crash)
+}
+
+## Rules
+- Every "id" must be unique across the entire response.
+- "name" in events must be SCREAMING_SNAKE_CASE.
+- "expectedProperties" keys must be snake_case.
+- If a flow or event has no clear evidence, mark it with source "inferred" and set confidence ≤ 0.6.
+- If information is missing, use an empty array [] rather than omitting the field.
+- Do not invent flows or events that are not at all implied by the documentation.`;
 
     const docParts = docs
       .map((d) => `=== ${d.name} ===\n${d.content}`)
       .join('\n\n');
 
-    const user = `Analyze the following product documentation and extract the Intent Model:\n\n${docParts}`;
+    const user = `Analyze the following product documentation and extract the Intent Model as described in the system instructions.
+
+${docParts}`;
 
     return { system, user };
   }

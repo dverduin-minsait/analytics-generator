@@ -1,8 +1,9 @@
 import { ipcMain, BrowserWindow } from 'electron';
 import { IPC_CHANNELS } from '../../shared/ipc-channels';
 import { PhaseRegistry } from '../phases/phase-registry';
-import type { ExecutePhaseRequest, CancelPhaseRequest } from '../../shared/ipc-api';
+import type { ExecutePhaseRequest, CancelPhaseRequest, GetPhasePromptRequest } from '../../shared/ipc-api';
 import type { ProgressEvent } from '../../shared/phase-engine';
+import { IntentAnalysisEngine } from '../phases/intent-analysis/intent-analysis-engine';
 
 export function registerPhaseHandlers(): void {
   const registry = PhaseRegistry.getInstance();
@@ -66,6 +67,22 @@ export function registerPhaseHandlers(): void {
       if (engine) {
         await engine.cancel();
       }
+    },
+  );
+
+  // ── Generate clipboard prompt ─────────────────────────────────────────────
+  ipcMain.handle(
+    IPC_CHANNELS.PHASE_GET_PROMPT,
+    async (_event, req: GetPhasePromptRequest) => {
+      // Currently only Phase 1 supports clipboard prompts
+      const engine = new IntentAnalysisEngine();
+      const prompt = await engine.generateClipboardPrompt(req.filePaths);
+      return {
+        prompt,
+        instructions:
+          'Copy this prompt, paste it into any chatbot (ChatGPT, Claude, Gemini, etc.), ' +
+          'then paste the JSON response back into the app.',
+      };
     },
   );
 }

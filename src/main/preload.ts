@@ -18,6 +18,7 @@ import { IPC_CHANNELS } from '../shared/ipc-channels';
 import type { ElectronAPI } from '../shared/ipc-api';
 import type { PhaseId } from '../shared/phase-descriptor';
 import type { ProgressEvent } from '../shared/phase-engine';
+import type { GetPhasePromptRequest } from '../shared/ipc-api';
 
 // ─── Build the typed API object ───────────────────────────────────────────────
 
@@ -36,6 +37,7 @@ const electronAPI: ElectronAPI = {
     getDescriptors: () => ipcRenderer.invoke(IPC_CHANNELS.PHASE_GET_DESCRIPTORS),
     execute: (req) => ipcRenderer.invoke(IPC_CHANNELS.PHASE_EXECUTE, req),
     cancel: (req) => ipcRenderer.invoke(IPC_CHANNELS.PHASE_CANCEL, req),
+    getPrompt: (req: GetPhasePromptRequest) => ipcRenderer.invoke(IPC_CHANNELS.PHASE_GET_PROMPT, req),
   },
 
   // ── File system ──────────────────────────────────────────────────────────

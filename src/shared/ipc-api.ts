@@ -42,6 +42,22 @@ export interface CancelPhaseRequest {
   readonly phaseId: PhaseId;
 }
 
+export interface GetPhasePromptRequest {
+  readonly phaseId: PhaseId;
+  /** Absolute paths to the input files (already selected by the user) */
+  readonly filePaths: string[];
+}
+
+export interface GetPhasePromptResponse {
+  /**
+   * A self-contained prompt the user can paste verbatim into any chatbot.
+   * Includes the full system instruction and all document content.
+   */
+  readonly prompt: string;
+  /** Short description of what the user should ask for */
+  readonly instructions: string;
+}
+
 // ─── File system ─────────────────────────────────────────────────────────────
 
 export interface FileFilter {
@@ -86,6 +102,12 @@ export interface ElectronAPI {
      */
     execute(req: ExecutePhaseRequest): Promise<void>;
     cancel(req: CancelPhaseRequest): Promise<void>;
+    /**
+     * Generates a clipboard-ready prompt from the selected input files.
+     * The user can paste this into any external chatbot and return the
+     * JSON response to the app via the manual input flow.
+     */
+    getPrompt(req: GetPhasePromptRequest): Promise<GetPhasePromptResponse>;
   };
 
   filesystem: {

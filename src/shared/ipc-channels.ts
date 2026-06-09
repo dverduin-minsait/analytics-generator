@@ -16,6 +16,8 @@ export const IPC_CHANNELS = {
   PHASE_GET_DESCRIPTORS: 'phase:getDescriptors',
   PHASE_EXECUTE: 'phase:execute',
   PHASE_CANCEL: 'phase:cancel',
+  /** Returns a clipboard-ready prompt the user can paste into any chatbot */
+  PHASE_GET_PROMPT: 'phase:getPrompt',
 
   // ── Phase progress stream (main → renderer via webContents.send) ─────────
   // Runtime channel name is: `${PHASE_PROGRESS_EVENT}:${projectId}:${phaseId}`

@@ -13,49 +13,91 @@
     <!-- ── Input section ────────────────────────────────────────────────── -->
     @if (!isCompleted() || !intentModel()) {
       <section class="phase-section" aria-label="Documentation input">
-        <h2 class="phase-section__title">Documentation Files</h2>
-        <p class="phase-section__desc">
-          Select your product documentation files. Supported formats:
-          Markdown (.md), plain text (.txt), and PDF (.pdf).
-        </p>
 
-        <app-file-input
-          [files]="selectedFiles()"
-          [disabled]="isExecuting()"
-          (filesChanged)="onFilesChanged($event)"
-        />
+        <!-- ── Path chooser (always visible) ────────────────────────── -->
+        <div class="path-chooser" role="group" aria-label="Choose analysis method">
+          <button
+            type="button"
+            class="path-card"
+            [class.path-card--active]="mode() === 'auto'"
+            [attr.aria-pressed]="mode() === 'auto'"
+            [disabled]="isExecuting()"
+            (click)="setMode('auto')"
+          >
+            <span class="path-card__icon" aria-hidden="true">⚡</span>
+            <span class="path-card__label">Analyse in app</span>
+            <span class="path-card__desc">
+              Upload files and run analysis using your configured LLM
+            </span>
+          </button>
+          <button
+            type="button"
+            class="path-card"
+            [class.path-card--active]="mode() === 'manual'"
+            [attr.aria-pressed]="mode() === 'manual'"
+            [disabled]="isExecuting()"
+            (click)="setMode('manual')"
+          >
+            <span class="path-card__icon" aria-hidden="true">✎</span>
+            <span class="path-card__label">Use my own chatbot</span>
+            <span class="path-card__desc">
+              Get a ready-made prompt, run it in ChatGPT / Claude / Gemini, paste the result back
+            </span>
+          </button>
+        </div>
 
-        <!-- ── Execute / status actions ──────────────────────────────── -->
-        <div class="phase-section__actions">
-          @if (executionState() === 'idle' || executionState() === 'cancelled') {
-            <button
-              type="button"
-              class="btn btn--primary"
-              [disabled]="!canExecute()"
-              (click)="execute()"
-              aria-label="Run Intent Analysis"
-            >
-              @if (selectedFiles().length === 0) {
-                Select files to begin
-              } @else {
-                ▶ Run Intent Analysis
-              }
-            </button>
-          }
+        <!-- ── Auto mode: file upload + run ─────────────────────────── -->
+        @if (mode() === 'auto') {
+          <div class="phase-subsection">
+            <h2 class="phase-section__title">Documentation Files</h2>
+            <p class="phase-section__desc">
+              Supported formats: Markdown (.md), plain text (.txt), PDF (.pdf).
+            </p>
+            <app-file-input
+              [files]="selectedFiles()"
+              [disabled]="isExecuting()"
+              (filesChanged)="onFilesChanged($event)"
+            />
+          </div>
 
-          @if (hasFailed()) {
-            <div class="error-banner" role="alert">
-              <span>Analysis failed. Check the log below for details.</span>
+          <div class="phase-section__actions">
+            @if (executionState() === 'idle' || executionState() === 'cancelled') {
               <button
                 type="button"
-                class="btn btn--ghost btn--sm"
-                (click)="resetAndRetry()"
+                class="btn btn--primary"
+                [disabled]="!canExecute()"
+                (click)="execute()"
+                aria-label="Run Intent Analysis with configured LLM"
               >
-                Try Again
+                @if (selectedFiles().length === 0) {
+                  Select files to begin
+                } @else {
+                  ▶ Run Intent Analysis
+                }
               </button>
-            </div>
-          }
-        </div>
+            }
+
+            @if (hasFailed()) {
+              <div class="error-banner" role="alert">
+                <span>Analysis failed. Check the log below for details.</span>
+                <button
+                  type="button"
+                  class="btn btn--ghost btn--sm"
+                  (click)="resetAndRetry()"
+                >
+                  Try Again
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ── Manual mode: prompt copy + JSON paste ─────────────────── -->
+        @if (mode() === 'manual' && (executionState() === 'idle' || executionState() === 'cancelled')) {
+          <app-manual-llm-input
+            (submitted)="executeManual($event)"
+          />
+        }
       </section>
     }
 

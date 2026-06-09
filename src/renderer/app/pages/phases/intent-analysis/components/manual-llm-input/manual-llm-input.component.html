@@ -1,0 +1,157 @@
+<div class="manual-llm">
+
+  <!-- ── Step 1: Select files & copy the prompt ──────────────────────────── -->
+  <div class="manual-llm__step">
+    <div class="manual-llm__step-header">
+      <span class="manual-llm__step-number" aria-hidden="true">1</span>
+      <h3 class="manual-llm__step-title">Copy the analysis prompt</h3>
+    </div>
+    <p class="manual-llm__step-desc">
+      Select your documentation files, then generate a ready-made prompt to paste
+      into ChatGPT, Claude, Gemini, or any other chatbot.
+    </p>
+
+    <!-- File picker -->
+    <div class="manual-llm__file-picker">
+      <button
+        type="button"
+        class="btn btn--secondary"
+        [disabled]="isPickingFiles() || isLoadingPrompt()"
+        (click)="pickFiles()"
+        aria-label="Select documentation files for prompt generation"
+      >
+        @if (isPickingFiles()) {
+          <span class="spinner" aria-hidden="true"></span> Opening…
+        } @else {
+          📂 Select Files…
+        }
+      </button>
+
+      @if (effectiveFilePaths().length > 0) {
+        <ul class="manual-llm__file-list" aria-label="Selected documentation files">
+          @for (fp of effectiveFilePaths(); track fp) {
+            <li class="manual-llm__file-item">
+              <span class="manual-llm__file-name" [title]="fp">{{ basename(fp) }}</span>
+              <button
+                type="button"
+                class="btn btn--ghost btn--sm manual-llm__file-remove"
+                (click)="removeFile(fp)"
+                [attr.aria-label]="'Remove ' + fp"
+              >✕</button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <!-- Generate / show prompt -->
+    @if (effectiveFilePaths().length > 0) {
+      @if (!clipboardPrompt() && !isLoadingPrompt()) {
+        <button
+          type="button"
+          class="btn btn--secondary"
+          (click)="loadPrompt()"
+          aria-label="Generate clipboard prompt from selected files"
+        >
+          ⚡ Generate Prompt
+        </button>
+      }
+
+      @if (isLoadingPrompt()) {
+        <p class="manual-llm__loading" role="status" aria-live="polite">
+          <span class="spinner" aria-hidden="true"></span>
+          Reading files and building prompt…
+        </p>
+      }
+
+      @if (promptError()) {
+        <p class="manual-llm__error" role="alert">{{ promptError() }}</p>
+      }
+
+      @if (clipboardPrompt()) {
+        <div class="manual-llm__prompt-box">
+          <div class="manual-llm__prompt-toolbar">
+            <span class="manual-llm__prompt-label">
+              Prompt ready ({{ clipboardPrompt().length.toLocaleString() }} chars)
+            </span>
+            <button
+              type="button"
+              class="btn btn--ghost btn--sm"
+              (click)="copyToClipboard()"
+              [attr.aria-label]="copied() ? 'Copied to clipboard' : 'Copy prompt to clipboard'"
+            >
+              @if (copied()) { ✓ Copied! } @else { ⎘ Copy to clipboard }
+            </button>
+          </div>
+          <textarea
+            class="manual-llm__prompt-textarea"
+            [value]="clipboardPrompt()"
+            readonly
+            aria-label="Generated prompt — copy and paste into your chatbot"
+            rows="12"
+          ></textarea>
+        </div>
+      }
+    } @else {
+      <p class="manual-llm__step-desc manual-llm__step-desc--muted">
+        No files selected yet. Click <strong>Select Files…</strong> above, or skip to
+        Step 2 if you already have a JSON result.
+      </p>
+    }
+  </div>
+
+  <!-- ── Step 2: Paste the JSON response ────────────────────────────────── -->
+  <div class="manual-llm__step">
+    <div class="manual-llm__step-header">
+      <span class="manual-llm__step-number" aria-hidden="true">2</span>
+      <h3 class="manual-llm__step-title">Paste the chatbot response</h3>
+    </div>
+    <p class="manual-llm__step-desc">
+      Paste the <strong>JSON response</strong> from your chatbot below.
+      The app validates the structure before processing.
+    </p>
+
+    <div class="manual-llm__input-wrap">
+      <label for="manual-json-input" class="sr-only">Chatbot JSON response</label>
+      <textarea
+        id="manual-json-input"
+        class="manual-llm__json-textarea"
+        [class.manual-llm__json-textarea--valid]="validation().valid"
+        [class.manual-llm__json-textarea--invalid]="validation().errorMessage !== null"
+        [ngModel]="pastedJson()"
+        (ngModelChange)="onJsonInput($event)"
+        placeholder='{ "flows": [...], "globalEvents": [...] }'
+        aria-label="Paste the JSON response from your chatbot here"
+        [attr.aria-describedby]="validation().errorMessage ? 'json-validation-error' : null"
+        rows="14"
+        spellcheck="false"
+        autocomplete="off"
+      ></textarea>
+
+      @if (validation().errorMessage) {
+        <p id="json-validation-error" class="manual-llm__validation-error" role="alert">
+          ✕ {{ validation().errorMessage }}
+        </p>
+      }
+
+      @if (validation().valid) {
+        <p class="manual-llm__validation-ok" role="status">
+          ✓ Valid Intent Model structure detected
+        </p>
+      }
+    </div>
+
+    <div class="manual-llm__actions">
+      <button
+        type="button"
+        class="btn btn--primary"
+        [disabled]="!canSubmit()"
+        (click)="submit()"
+        aria-label="Submit manual analysis and process result"
+      >
+        ▶ Submit &amp; Process
+      </button>
+    </div>
+  </div>
+
+</div>

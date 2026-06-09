@@ -24,6 +24,13 @@ export interface ExecutionOptions {
   readonly dryRun: boolean;
   /** The configured LLM provider key. Required when useLLM is true. */
   readonly llmProvider?: string;
+  /**
+   * When set, the engine uses this raw JSON string as the LLM response instead
+   * of calling the configured provider. This enables "bring your own chatbot"
+   * mode where the user manually obtains the LLM analysis from an external tool.
+   * The string must conform to the phase's expected output schema.
+   */
+  readonly manualLLMResponse?: string;
 }
 
 // ─── Progress events ─────────────────────────────────────────────────────────
